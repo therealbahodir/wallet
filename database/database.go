@@ -7,7 +7,18 @@ import (
 	"os"
 	"log"
 	"fmt"
+	"time"
+	"errors"
 )
+
+type User struct {
+	UserId string
+	Digest string
+	CreatedAt time.Time
+	IsIdentified bool
+	Balance float64
+}
+
 
 func DBConnection () (*gorm.DB, error) {
 
@@ -35,4 +46,24 @@ func DBConnection () (*gorm.DB, error) {
 	)
 
 	return gorm.Open(postgres.Open(PGConnection), &gorm.Config{})
+}
+
+
+func IsExisting (id, digest string) error {
+	
+	db, err:= DBConnection()
+	if err != nil {
+		log.Print(err)
+		return err
+	}
+
+	var user User
+	db.Where("user_id = ? AND digest = ?", id, digest).Find(&user)
+
+	if user.UserId == id && user.Digest == digest {
+		return nil
+	} 
+
+	err = errors.New("Incorrect user_id or digest")
+	return err
 }
