@@ -7,6 +7,10 @@ import (
 	"log"
 )
 
+type TopUp struct {
+	Amount float64  `json:"amount"`
+}
+
 
 func CheckApi (ctx *gin.Context) {
 
@@ -22,5 +26,29 @@ func CheckApi (ctx *gin.Context) {
 	}
 
 	ctx.Writer.WriteHeader(200)
+
+}
+
+
+func TopUpBalanceApi (ctx *gin.Context) {
+
+	var user TopUp
+	ctx.BindJSON(&user)
+
+	userId := ctx.Query("X-UserId")
+	digest := ctx.Query("X-Digest")
+
+	err := database.TopUpBalance(userId, digest, user.Amount)
+	if err != nil {
+		log.Print(err)
+		ctx.JSON(400, gin.H{
+			"message" : err.Error(),
+		},)
+		return
+	}
+
+		ctx.JSON(202, gin.H{
+			"message" : "Replenishment was successfully completed",
+		},)
 
 }

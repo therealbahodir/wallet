@@ -19,6 +19,12 @@ type User struct {
 	Balance float64
 }
 
+type Replenishment struct {
+	UserId string
+	Amount float64 
+	ReceivedAt time.Time
+}
+
 
 func DBConnection () (*gorm.DB, error) {
 
@@ -66,4 +72,62 @@ func IsExisting (id, digest string) error {
 
 	err = errors.New("Incorrect user_id or digest")
 	return err
+}
+
+func TopUpBalance (id, digest string, amount float64) error {
+
+	db, err:= DBConnection()
+	if err != nil {
+		log.Print(err)
+		return err
+	}
+
+	var user User
+	db.Table("users").Where("user_id = ? AND digest = ?", id, digest).Find(&user)
+	
+	err = nil
+	if user.UserId == id && user.Digest == digest {
+
+		if user.IsIdentified == true && user.Balance <= 100000 - amount {
+			user.Balance += amount
+			db.Where("user_id = ? AND digest = ?", id, digest).Save(&user)
+			EnterReplenishment(id, amount)
+		} else if user.IsIdentified == false && user.Balance <= 10000 - amount{
+			user.Balance += amount
+			db.Where("user_id = ? AND digest = ?", id, digest).Save(&user)
+			EnterReplenishment(id, amount)
+		} else if user.IsIdentified == false && user.Balance >= 10000 - amount{
+			err = errors.New("You cannot have more than 10000 tjs")
+		} else if user.IsIdentified == true && user.Balance >= 100000 - amount {
+			err = errors.New("You cannot have more than 100000 tjs")
+		}
+
+	} else {
+		err = errors.New("Incorrect user_id or digest")
+	}
+
+	return err
+}
+
+
+func EnterReplenishment (id string, amount float64) error {
+	db, err:= DBConnection()
+	if err != nil {
+		log.Print(err)
+		return err
+	}
+
+	var replenishment Replenishment
+
+	replenishment.UserId = id
+	replenishment.Amount = amount
+	replenishment.ReceivedAt = time.Now()
+
+	result := db.Create(&replenishment)
+
+	if result.Error != nil {
+		log.Print(err)
+		return err
+	}
+	return nil
 }

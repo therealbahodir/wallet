@@ -19,6 +19,7 @@ func main () {
 	router := gin.Default()
 
 	router.POST("/check", handlers.CheckApi)
+	router.POST("/topup", handlers.TopUpBalanceApi)
 
 
 	port := os.Getenv("APP_HTTP_PORT")
