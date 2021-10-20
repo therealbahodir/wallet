@@ -150,3 +150,16 @@ func ReplenishmentsInfo (id string) (count int, sum float64) {
 	}
 	return count, sum
 }
+
+
+func GetBalance (id, digest string) float64 {
+	db, err:= DBConnection()
+	if err != nil {
+		log.Print(err)
+	}
+
+	var user User
+	db.Table("users").Where("user_id = ? AND digest = ?", id, digest).Find(&user)
+	
+	return user.Balance
+}

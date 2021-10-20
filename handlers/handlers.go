@@ -74,3 +74,24 @@ func MonthlyReplenishments (ctx *gin.Context) {
 	},)
 
 }
+
+func GetBalanceApi(ctx *gin.Context) {
+
+	userId := ctx.Query("X-UserId")
+	digest := ctx.Query("X-Digest")
+
+	err := database.IsExisting(userId, digest)
+
+	if err != nil {
+		ctx.Writer.WriteHeader(401)
+		log.Print(err)
+		return
+	}
+
+	balance := database.GetBalance(userId, digest)
+
+	ctx.JSON(200, gin.H{
+		"balance" : balance,
+	},)
+
+}
