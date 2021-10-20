@@ -20,6 +20,7 @@ func main () {
 
 	router.POST("/check", handlers.CheckApi)
 	router.POST("/topup", handlers.TopUpBalanceApi)
+	router.POST("/repl", handlers.MonthlyReplenishments)
 
 
 	port := os.Getenv("APP_HTTP_PORT")

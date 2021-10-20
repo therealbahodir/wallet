@@ -131,3 +131,22 @@ func EnterReplenishment (id string, amount float64) error {
 	}
 	return nil
 }
+
+func ReplenishmentsInfo (id string) (count int, sum float64) {
+	
+	db, err := DBConnection()
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	var replenishments []Replenishment
+
+	db.Table("replenishments").Where("extract(month from received_at) = extract(month from current_timestamp) AND user_id = ?", id).Find(&replenishments)
+
+
+	for _, repl := range replenishments{
+		count += 1 
+		sum += repl.Amount
+	}
+	return count, sum
+}
